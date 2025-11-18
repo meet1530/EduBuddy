@@ -247,7 +247,7 @@ def extract_json_from_response(text):
     text = text.strip()
     text = re.sub(r'^```json\s*', '', text, flags=re.MULTILINE)
     text = re.sub(r'^```\s*', '', text, flags=re.MULTILINE)
-    text = re.sub(r'\s*```
+    text = re.sub(r'\s*```, '', text)
 
 # ========================
 # ROUTES
@@ -646,4 +646,5 @@ def internal_error(e):
     return jsonify({"error": "Internal server error"}), 500
 
 if __name__ == '__main__':
+
     app.run(debug=False, host='0.0.0.0', port=5000)
