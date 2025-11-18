@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Practice Quiz</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .container {
+      display: flex;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 1000px;
+      width: 100%;
+      overflow: hidden;
+      margin: 20px;
+    }
+    
+    .left {
+      flex: 3;
+      padding: 40px;
+      min-height: 500px;
+    }
+    
+    .right {
+      flex: 1;
+      background: #f8f9fa;
+      border-left: 2px solid #e9ecef;
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 600px;
+      display: none;
+    }
+    
+    h2 { color: #667eea; margin-bottom: 30px; text-align: center; }
+    h3 { color: #495057; margin-bottom: 15px; }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #495057;
+      font-weight: 500;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    button {
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      width: 100%;
+      margin-top: 10px;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-primary:disabled {
+      background: #adb5bd;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+      margin: 5px;
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #218838;
+    }
+    
+    .question-btn {
+      width: 45px;
+      height: 45px;
+      margin: 5px;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+      cursor: pointer;
+      background: white;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .question-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    .question-btn.answered {
+      background: #28a745;
+      color: white;
+      border-color: #28a745;
+    }
+    
+    .question-btn.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+      transform: scale(1.1);
+    }
+    
+    #quiz-area { display: none; }
+    
+    #question {
+      font-size: 18px;
+      margin: 20px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+      line-height: 1.6;
+    }
+    
+    .loader {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+      color: #667eea;
+    }
+    
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    #result {
+      margin-top: 20px;
+    }
+    
+    .result-item {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid #28a745;
+      background: #f8f9fa;
+    }
+    
+    .result-item.incorrect {
+      border-left-color: #dc3545;
+    }
+    
+    .result-item strong {
+      color: #495057;
+    }
+    
+    .progress-container {
+      width: 100%;
+      background: #e9ecef;
+      border-radius: 10px;
+      height: 10px;
+      margin: 15px 0;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 10px;
+      width: 0%;
+      background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+      transition: width 0.5s ease;
+      border-radius: 10px;
+    }
+    
+    .mcq-option {
+      display: block;
+      padding: 15px;
+      margin: 10px 0;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+    
+    .mcq-option:hover {
+      background: #f8f9fa;
+      border-color: #667eea;
+    }
+    
+    .mcq-option input[type="radio"] {
+      width: auto;
+      margin-right: 10px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .button-group button {
+      flex: 1;
+    }
+    
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #dc3545;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: none;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+    
+    .toast.success {
+      background: #28a745;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .qnum {
+      color: #6c757d;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        margin: 10px;
+      }
+      
+      .left {
+        padding: 20px;
+      }
+      
+      .right {
+        border-left: none;
+        border-top: 2px solid #e9ecef;
+        max-height: 200px;
+      }
+      
+      .button-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <h2>📐 Math Practice Quiz</h2>
+
+      <div id="setup">
+        <div class="form-group">
+          <label for="topic">Topic</label>
+          <input type="text" id="topic" placeholder="e.g., Algebra, Geometry, Calculus" maxlength="100">
+        </div>
+        
+        <div class="form-group">
+          <label for="grade">Grade Level</label>
+          <select id="grade">
+            <option value="">Select Grade</option>
+            <option value="2">Grade 2</option>
+            <option value="3">Grade 3</option>
+            <option value="4">Grade 4</option>
+            <option value="5">Grade 5</option>
+            <option value="6">Grade 6</option>
+            <option value="7">Grade 7</option>
+            <option value="8">Grade 8</option>
+            <option value="9">Grade 9</option>
+            <option value="10">Grade 10</option>
+            <option value="11">Grade 11</option>
+            <option value="12">Grade 12</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="difficulty">Difficulty</label>
+          <select id="difficulty">
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="quizType">Quiz Type</label>
+          <select id="quizType">
+            <option value="written">Written Answer</option>
+            <option value="mcq">Multiple Choice</option>
+            <option value="mixed">Mixed</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="count">Number of Questions (1-20)</label>
+          <input type="number" id="count" value="5" min="1" max="20">
+        </div>
+        
+        <button id="generateBtn" class="btn-primary" onclick="generateQuiz()">
+          Generate Quiz
+        </button>
+        
+        <div id="loader" class="loader">
+          <div class="spinner"></div>
+          <p>🌀 Generating creative math questions...</p>
+        </div>
+      </div>
+
+      <div id="quiz-area">
+        <div class="qnum" id="qnum"></div>
+        <div class="progress-container">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div id="question"></div>
+        <div id="options"></div>
+        <input type="text" id="user-answer" placeholder="Enter your answer" style="display:none;">
+        
+        <div class="button-group">
+          <button class="btn-secondary" onclick="prevQuestion()">◄ Previous</button>
+          <button id="nextBtn" class="btn-secondary" onclick="nextQuestion()">Next ►</button>
+          <button id="submitBtn" class="btn-success" onclick="submitQuiz()">✓ Submit Quiz</button>
+        </div>
+        
+        <div id="eval-loader" class="loader">
+          <div class="spinner"></div>
+          <p>⚙️ Evaluating your answers, please wait...</p>
+        </div>
+        
+        <div id="result"></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <h3>Questions</h3>
+      <div id="nav"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- MathJax Configuration -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+
+  <script>
+    let questions = [], current = 0, userAnswers = [];
+
+    // Add error logging
+    window.addEventListener('error', function(e) {
+      console.error('Page error:', e.error);
+      showToast('An error occurred: ' + e.message);
+    });
+
+    function showToast(message, isSuccess = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast' + (isSuccess ? ' success' : '');
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
+
+    async function generateQuiz() {
+      const topic = document.getElementById('topic');
+      const grade = document.getElementById('grade');
+      const difficulty = document.getElementById('difficulty');
+      const count = document.getElementById('count');
+      const quizType = document.getElementById('quizType');
+      const generateBtn = document.getElementById('generateBtn');
+      const loader = document.getElementById('loader');
+
+      // Check all elements exist
+      if (!topic || !grade || !difficulty || !count || !quizType || !generateBtn || !loader) {
+        console.error('Missing form elements');
+        alert('Page not loaded properly. Please refresh.');
+        return;
+      }
+
+      const topicVal = topic.value.trim();
+      const gradeVal = grade.value;
+      const difficultyVal = difficulty.value;
+      const countVal = parseInt(count.value);
+      const quizTypeVal = quizType.value;
+
+      if (!topicVal || !gradeVal) {
+        showToast('Please enter a topic and select a grade.');
+        return;
+      }
+
+      if (countVal < 1 || countVal > 20) {
+        showToast('Number of questions must be between 1 and 20.');
+        return;
+      }
+
+      generateBtn.disabled = true;
+      loader.style.display = 'block';
+
+      try {
+        const res = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            topic: topicVal, 
+            grade: gradeVal, 
+            difficulty: difficultyVal, 
+            count: countVal, 
+            quizType: quizTypeVal 
+          })
+        });
+        
+        loader.style.display = 'none';
+        generateBtn.disabled = false;
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({ error: 'Server error' }));
+          showToast(errorData.error || 'Could not generate quiz. Please try again.');
+          return;
+        }
+
+        const data = await res.json();
+
+        if (data.error) {
+          showToast(data.error);
+          return;
+        }
+
+        if (!data.questions || !Array.isArray(data.questions) || data.questions.length === 0) {
+          showToast('No questions were generated. Please try again.');
+          return;
+        }
+
+        questions = data.questions;
+        userAnswers = new Array(questions.length).fill('');
+        current = 0;
+
+        const setupDiv = document.getElementById('setup');
+        const quizArea = document.getElementById('quiz-area');
+        const rightPanel = document.querySelector('.right');
+        const resultDiv = document.getElementById('result');
+
+        if (setupDiv) setupDiv.style.display = 'none';
+        if (quizArea) quizArea.style.display = 'block';
+        if (rightPanel) rightPanel.style.display = 'block';
+        if (resultDiv) resultDiv.innerHTML = '';
+        
+        buildNav();
+        showQuestion();
+        showToast('Quiz generated successfully!', true);
+      } catch (err) {
+        generateBtn.disabled = false;
+        if (loader) loader.style.display = 'none';
+        showToast('Network error: ' + err.message);
+        console.error('Error details:', err);
+      }
+    }
+
+    function buildNav() {
+      const nav = document.getElementById('nav');
+      if (!nav) {
+        console.error('Navigation element not found');
+        return;
+      }
+      
+      nav.innerHTML = '';
+      questions.forEach((_, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = i + 1;
+        btn.className = 'question-btn';
+        btn.onclick = () => goToQuestion(i);
+        btn.setAttribute('aria-label', `Go to question ${i + 1}`);
+        nav.appendChild(btn);
+      });
+    }
+
+    function updateNav() {
+      const buttons = document.querySelectorAll('.question-btn');
+      if (!buttons || buttons.length === 0) return;
+      
+      buttons.forEach((btn, i) => {
+        btn.classList.toggle('active', i === current);
+        btn.classList.toggle('answered', userAnswers[i] && userAnswers[i].trim() !== '');
+      });
+    }
+
+    function updateProgress() {
+      const bar = document.getElementById('progress-bar');
+      if (!bar) return;
+      
+      const answered = userAnswers.filter(a => a && a.trim() !== '').length;
+      const percent = Math.round((answered / questions.length) * 100);
+      bar.style.width = percent + '%';
+    }
+
+    function showQuestion() {
+      const q = questions[current];
+      if (!q || typeof q !== 'object') {
+        showToast('Invalid question data');
+        return;
+      }
+      
+      const qnumEl = document.getElementById('qnum');
+      const questionEl = document.getElementById('question');
+      const optionsEl = document.getElementById('options');
+      const answerInput = document.getElementById('user-answer');
+      const nextBtn = document.getElementById('nextBtn');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (!qnumEl || !questionEl || !optionsEl || !answerInput || !nextBtn || !submitBtn) {
+        showToast('Page elements not found');
+        console.error('Missing elements');
+        return;
+      }
+      
+      qnumEl.textContent = `Question ${current + 1} of ${questions.length}`;
+      questionEl.innerHTML = q.question || 'Question text not available';
+      optionsEl.innerHTML = '';
+      answerInput.style.display = 'none';
+
+      if (q.options && Array.isArray(q.options) && q.options.length > 0) {
+        q.options.forEach((opt, idx) => {
+          const label = document.createElement('label');
+          label.className = 'mcq-option';
+          const checked = userAnswers[current] === opt ? 'checked' : '';
+          const safeOpt = String(opt).replace(/"/g, '&quot;');
+          label.innerHTML = `
+            <input type="radio" name="option" value="${safeOpt}" ${checked}>
+            ${opt}
+          `;
+          optionsEl.appendChild(label);
+        });
+      } else {
+        answerInput.style.display = 'block';
+        answerInput.value = userAnswers[current] || '';
+        answerInput.focus();
+      }
+
+      nextBtn.style.display = current === questions.length - 1 ? 'none' : 'inline-block';
+      submitBtn.style.display = current === questions.length - 1 ? 'inline-block' : 'none';
+      
+      updateNav();
+      updateProgress();
+      
+      // Render math with MathJax
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        setTimeout(() => {
+          MathJax.typesetPromise().catch((err) => console.log('MathJax error:', err));
+        }, 100);
+      }
+    }
+
+    function saveAnswer() {
+      const q = questions[current];
+      if (!q) return;
+      
+      if (q.options && q.options.length > 0) {
+        const selected = document.querySelector('input[name="option"]:checked');
+        userAnswers[current] = selected ? selected.value : '';
+      } else {
+        userAnswers[current] = document.getElementById('user-answer').value.trim();
+      }
+      
+      updateProgress();
+    }
+
+    function goToQuestion(i) {
+      saveAnswer();
+      current = i;
+      showQuestion();
+    }
+
+    function nextQuestion() {
+      saveAnswer();
+      if (current < questions.length - 1) {
+        current++;
+        showQuestion();
+      }
+    }
+
+    function prevQuestion() {
+      saveAnswer();
+      if (current > 0) {
+        current--;
+        showQuestion();
+      }
+    }
+
+    async function submitQuiz() {
+      saveAnswer();
+      
+      const unanswered = userAnswers.filter(a => !a || a.trim() === '').length;
+      if (unanswered > 0) {
+        if (!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) {
+          return;
+        }
+      }
+
+      const evalLoader = document.getElementById('eval-loader');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      evalLoader.style.display = 'block';
+      submitBtn.disabled = true;
+
+      const qa_pairs = questions.map((q, i) => ({
+        question: q.question,
+        correct_answer: q.answer,
+        student_answer: userAnswers[i] || ''
+      }));
+
+      try {
+        const res = await fetch('/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ qa_pairs })
+        });
+        
+        evalLoader.style.display = 'none';
+        submitBtn.disabled = false;
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({ error: 'Evaluation failed' }));
+          showToast(errorData.error || 'Evaluation failed');
+          return;
+        }
+
+        const data = await res.json();
+
+        if (data.error) {
+          showToast(data.error);
+          return;
+        }
+
+        if (!data.evaluation || !Array.isArray(data.evaluation)) {
+          showToast('Invalid evaluation response');
+          return;
+        }
+
+        displayResults(data.evaluation);
+        showToast('Quiz evaluated successfully!', true);
+      } catch (err) {
+        evalLoader.style.display = 'none';
+        submitBtn.disabled = false;
+        showToast('Network error: ' + err.message);
+        console.error('Error details:', err);
+      }
+    }
+
+    function displayResults(evaluation) {
+      if (!evaluation || !Array.isArray(evaluation)) {
+        showToast('Invalid results data');
+        return;
+      }
+
+      const resultDiv = document.getElementById('result');
+      if (!resultDiv) {
+        showToast('Result container not found');
+        return;
+      }
+
+      resultDiv.innerHTML = '<h3>📊 Results</h3>';
+
+      let correct = 0;
+      evaluation.forEach((r, i) => {
+        if (!r || typeof r !== 'object') return;
+        
+        const isCorrect = r.result && r.result.toLowerCase().includes('correct') && 
+                         !r.result.toLowerCase().includes('incorrect');
+        if (isCorrect) correct++;
+        
+        const item = document.createElement('div');
+        item.className = 'result-item' + (isCorrect ? '' : ' incorrect');
+        item.innerHTML = `
+          <strong>Q${i + 1}:</strong> ${r.result || 'Unknown'} ${isCorrect ? '✓' : '✗'}<br>
+          <small>${r.explanation || 'No explanation provided'}</small>
+        `;
+        resultDiv.appendChild(item);
+      });
+
+      const score = document.createElement('div');
+      score.style.cssText = 'text-align:center; margin-top:20px; font-size:24px; color:#667eea;';
+      score.innerHTML = `<strong>Score: ${correct}/${questions.length}</strong>`;
+      resultDiv.appendChild(score);
+
+      const homeBtn = document.createElement('button');
+      homeBtn.className = 'btn-primary';
+      homeBtn.textContent = '🏠 Create New Quiz';
+      homeBtn.onclick = goHome;
+      homeBtn.style.marginTop = '20px';
+      resultDiv.appendChild(homeBtn);
+
+      const questionEl = document.getElementById('question');
+      const optionsEl = document.getElementById('options');
+      const answerInput = document.getElementById('user-answer');
+      const qnumEl = document.getElementById('qnum');
+      const buttonGroup = document.querySelector('.button-group');
+      const rightPanel = document.querySelector('.right');
+
+      if (questionEl) questionEl.style.display = 'none';
+      if (optionsEl) optionsEl.style.display = 'none';
+      if (answerInput) answerInput.style.display = 'none';
+      if (qnumEl) qnumEl.style.display = 'none';
+      if (buttonGroup) buttonGroup.style.display = 'none';
+      if (rightPanel) rightPanel.style.display = 'none';
+
+      // Render math in results
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        setTimeout(() => {
+          MathJax.typesetPromise().catch((err) => console.log('MathJax error:', err));
+        }, 100);
+      }
+    }
+
+    function goHome() {
+      questions = [];
+      userAnswers = [];
+      current = 0;
+
+      const setupDiv = document.getElementById('setup');
+      const quizArea = document.getElementById('quiz-area');
+      const rightPanel = document.querySelector('.right');
+      const resultDiv = document.getElementById('result');
+      const questionEl = document.getElementById('question');
+      const optionsEl = document.getElementById('options');
+      const answerInput = document.getElementById('user-answer');
+      const qnumEl = document.getElementById('qnum');
+      const buttonGroup = document.querySelector('.button-group');
+      const progressBar = document.getElementById('progress-bar');
+      const nav = document.getElementById('nav');
+
+      if (setupDiv) setupDiv.style.display = 'block';
+      if (quizArea) quizArea.style.display = 'none';
+      if (rightPanel) rightPanel.style.display = 'none';
+      if (resultDiv) resultDiv.innerHTML = '';
+      if (questionEl) questionEl.style.display = 'block';
+      if (optionsEl) optionsEl.style.display = 'block';
+      if (answerInput) answerInput.style.display = 'inline-block';
+      if (qnumEl) qnumEl.style.display = 'block';
+      if (buttonGroup) buttonGroup.style.display = 'flex';
+      if (progressBar) progressBar.style.width = '0%';
+      if (nav) nav.innerHTML = '';
+
+      const topic = document.getElementById('topic');
+      const grade = document.getElementById('grade');
+      const difficulty = document.getElementById('difficulty');
+      const quizType = document.getElementById('quizType');
+      const count = document.getElementById('count');
+
+      if (topic) topic.value = '';
+      if (grade) grade.value = '';
+      if (difficulty) difficulty.value = 'Easy';
+      if (quizType) quizType.value = 'written';
+      if (count) count.value = 5;
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      const quizArea = document.getElementById('quiz-area');
+      if (!quizArea || quizArea.style.display === 'none') return;
+      
+      if (e.key === 'ArrowRight' && current < questions.length - 1) {
+        nextQuestion();
+      } else if (e.key === 'ArrowLeft' && current > 0) {
+        prevQuestion();
+      }
+    });
+
+    // Verify page loaded correctly
+    window.addEventListener('DOMContentLoaded', function() {
+      const requiredElements = [
+        'topic', 'grade', 'difficulty', 'quizType', 'count', 
+        'generateBtn', 'loader', 'setup', 'quiz-area', 
+        'question', 'options', 'user-answer', 'result'
+      ];
+      
+      const missing = requiredElements.filter(id => !document.getElementById(id));
+      
+      if (missing.length > 0) {
+        console.error('Missing page elements:', missing);
+        alert('Page did not load correctly. Missing: ' + missing.join(', ') + '. Please refresh.');
+      } else {
+        console.log('✓ All page elements loaded successfully');
+      }
+    });
+  </script>
+</body>
+</html>
