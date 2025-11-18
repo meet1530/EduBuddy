@@ -156,7 +156,7 @@ def generate():
             return jsonify({"error": "; ".join(errors)}), 400
         
         # Build prompt
-        prompt = f"""Create {validated_data['count']} math questions for Grade {validated_data['grade']} about "{validated_data['topic']}".
+        prompt = f"""Create {validated_data['count']} math questions for Grade {validated_data['grade']} about {validated_data['topic']}.
 
 Difficulty: {validated_data['difficulty']}
 Quiz type: {validated_data['quiz_type']}
@@ -257,10 +257,9 @@ Return ONLY this JSON (no extra text):
 [
   {{"result": "Correct", "explanation": "Brief explanation"}},
   {{"result": "Incorrect", "explanation": "Brief explanation"}}
-]
+]"""
 
-Data:
-""" + json.dumps(qa_pairs, indent=2)
+Data: + json.dumps(qa_pairs, indent=2)
 
         model = genai.GenerativeModel(MODEL_NAME)
         response = model.generate_content(eval_prompt)
