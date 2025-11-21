@@ -158,7 +158,7 @@ def generate():
             return jsonify({"error": "; ".join(errors)}), 400
         
         # Build prompt
-        prompt = f"""Create {validated_data['count']} math questions for Grade {validated_data['grade']} about "{validated_data['topic']}".
+        prompt = f"""Create {validated_data['count']} questions for Grade {validated_data['grade']} about "{validated_data['topic']}".
 
 Difficulty: {validated_data['difficulty']}
 Quiz type: {validated_data['quiz_type']}
@@ -314,3 +314,4 @@ if __name__ == '__main__':
         pass
     
     app.run(debug=True, host='0.0.0.0', port=5000)
+
