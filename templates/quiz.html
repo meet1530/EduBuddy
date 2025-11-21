@@ -1,22 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Practice Quiz</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduBuddy Quiz Generator</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
       padding: 20px;
     }
-    
+
+    /* Header with client logo placeholder and EduBuddy brand */
+    .brand-header {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      margin-bottom: 18px;
+    }
+
+    .brand-left {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex: 1;
+    }
+
+    .client-logo-placeholder {
+      width: 140px;
+      height: 56px;
+      border-radius: 8px;
+      border: 2px dashed #d6d6df;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 13px;
+      color: #666;
+      background: #fafafa;
+      flex-shrink: 0;
+    }
+
+    .brand-divider {
+      width:1px;
+      height:48px;
+      background:#eee;
+      margin-left: 6px;
+      margin-right: 6px;
+    }
+
+    .brand-right {
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      margin-left: auto;
+    }
+
+    .edubuddy-tag {
+      font-size:22px;
+      font-weight:800;
+      color:#5a5eea;
+      letter-spacing:0.3px;
+    }
+
+    .edubuddy-tagline {
+      font-size:13px;
+      color:#6b6b7a;
+      margin-top:4px;
+      font-style:italic;
+    }
+
+    /* Main container (keeps original layout but constrained to same max-width as header) */
     .container {
       display: flex;
       background: white;
@@ -25,15 +90,15 @@
       max-width: 1000px;
       width: 100%;
       overflow: hidden;
-      margin: 20px;
+      margin: 0 0 20px 0;
     }
-    
+
     .left {
       flex: 3;
       padding: 40px;
       min-height: 500px;
     }
-    
+
     .right {
       flex: 1;
       background: #f8f9fa;
@@ -43,21 +108,21 @@
       max-height: 600px;
       display: none;
     }
-    
+
     h2 { color: #667eea; margin-bottom: 30px; text-align: center; }
     h3 { color: #495057; margin-bottom: 15px; }
-    
+
     .form-group {
       margin-bottom: 20px;
     }
-    
+
     label {
       display: block;
       margin-bottom: 8px;
       color: #495057;
       font-weight: 500;
     }
-    
+
     input, select {
       width: 100%;
       padding: 12px;
@@ -66,13 +131,13 @@
       font-size: 14px;
       transition: all 0.3s;
     }
-    
+
     input:focus, select:focus {
       outline: none;
       border-color: #667eea;
       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
-    
+
     button {
       padding: 12px 24px;
       border-radius: 8px;
@@ -82,44 +147,44 @@
       transition: all 0.3s;
       font-size: 14px;
     }
-    
+
     .btn-primary {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       width: 100%;
       margin-top: 10px;
     }
-    
+
     .btn-primary:hover:not(:disabled) {
       transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
     }
-    
+
     .btn-primary:disabled {
       background: #adb5bd;
       cursor: not-allowed;
       transform: none;
     }
-    
+
     .btn-secondary {
       background: #6c757d;
       color: white;
       margin: 5px;
     }
-    
+
     .btn-secondary:hover {
       background: #5a6268;
     }
-    
+
     .btn-success {
       background: #28a745;
       color: white;
     }
-    
+
     .btn-success:hover {
       background: #218838;
     }
-    
+
     .question-btn {
       width: 45px;
       height: 45px;
@@ -131,26 +196,26 @@
       font-weight: 600;
       transition: all 0.2s;
     }
-    
+
     .question-btn:hover {
       transform: scale(1.05);
     }
-    
+
     .question-btn.answered {
       background: #28a745;
       color: white;
       border-color: #28a745;
     }
-    
+
     .question-btn.active {
       background: #667eea;
       color: white;
       border-color: #667eea;
       transform: scale(1.1);
     }
-    
+
     #quiz-area { display: none; }
-    
+
     #question {
       font-size: 18px;
       margin: 20px 0;
@@ -160,14 +225,14 @@
       border-left: 4px solid #667eea;
       line-height: 1.6;
     }
-    
+
     .loader {
       display: none;
       text-align: center;
       margin: 20px 0;
       color: #667eea;
     }
-    
+
     .spinner {
       border: 3px solid #f3f3f3;
       border-top: 3px solid #667eea;
@@ -177,16 +242,16 @@
       animation: spin 1s linear infinite;
       margin: 0 auto 10px;
     }
-    
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    
+
     #result {
       margin-top: 20px;
     }
-    
+
     .result-item {
       padding: 15px;
       margin: 10px 0;
@@ -194,15 +259,15 @@
       border-left: 4px solid #28a745;
       background: #f8f9fa;
     }
-    
+
     .result-item.incorrect {
       border-left-color: #dc3545;
     }
-    
+
     .result-item strong {
       color: #495057;
     }
-    
+
     .progress-container {
       width: 100%;
       background: #e9ecef;
@@ -211,7 +276,7 @@
       margin: 15px 0;
       overflow: hidden;
     }
-    
+
     .progress-bar {
       height: 10px;
       width: 0%;
@@ -219,7 +284,7 @@
       transition: width 0.5s ease;
       border-radius: 10px;
     }
-    
+
     .mcq-option {
       display: block;
       padding: 15px;
@@ -230,27 +295,27 @@
       transition: all 0.2s;
       background: white;
     }
-    
+
     .mcq-option:hover {
       background: #f8f9fa;
       border-color: #667eea;
     }
-    
+
     .mcq-option input[type="radio"] {
       width: auto;
       margin-right: 10px;
     }
-    
+
     .button-group {
       display: flex;
       gap: 10px;
       margin-top: 20px;
     }
-    
+
     .button-group button {
       flex: 1;
     }
-    
+
     .toast {
       position: fixed;
       top: 20px;
@@ -264,46 +329,92 @@
       z-index: 1000;
       animation: slideIn 0.3s ease;
     }
-    
+
     .toast.success {
       background: #28a745;
     }
-    
+
     @keyframes slideIn {
       from { transform: translateX(400px); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
     }
-    
+
     .qnum {
       color: #6c757d;
       font-size: 14px;
       margin-bottom: 10px;
     }
-    
+
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
         margin: 10px;
       }
-      
+
       .left {
         padding: 20px;
       }
-      
+
       .right {
         border-left: none;
         border-top: 2px solid #e9ecef;
         max-height: 200px;
       }
-      
+
       .button-group {
         flex-direction: column;
       }
+
+      .brand-header {
+        padding: 12px;
+        gap: 10px;
+      }
+
+      .client-logo-placeholder {
+        width: 110px;
+        height: 44px;
+      }
     }
+
+    /* Footer */
+    footer.site-footer {
+      width: 100%;
+      max-width: 1000px;
+      text-align: center;
+      padding: 12px 16px;
+      color: #ffffff;
+      opacity: 0.95;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+    footer.site-footer .muted {
+      color: rgba(255,255,255,0.9);
+    }
+
   </style>
 </head>
 <body>
-  <div class="container">
+  <!-- Header -->
+  <div class="brand-header" role="banner" aria-label="Brand header">
+    <div class="brand-left">
+      <div class="client-logo-placeholder" aria-hidden="true">
+        Client Logo
+      </div>
+      <div class="brand-divider" aria-hidden="true"></div>
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#333;">Practice Math Quizzes</div>
+        <div style="font-size:13px;color:#666;margin-top:4px;">Generate & evaluate questions instantly</div>
+      </div>
+    </div>
+
+    <div class="brand-right" aria-hidden="false">
+      <div class="edubuddy-tag">EduBuddy</div>
+      <div class="edubuddy-tagline">Your partner in learning</div>
+    </div>
+  </div>
+
+  <!-- Main quiz UI (unchanged logic from your original file) -->
+  <div class="container" role="main">
     <div class="left">
       <h2>Practice Quiz</h2>
 
@@ -312,7 +423,7 @@
           <label for="topic">Topic</label>
           <input type="text" id="topic" placeholder="e.g., Algebra, Geometry, Calculus" maxlength="100">
         </div>
-        
+
         <div class="form-group">
           <label for="grade">Grade Level</label>
           <select id="grade">
@@ -330,7 +441,7 @@
             <option value="12">Grade 12</option>
           </select>
         </div>
-        
+
         <div class="form-group">
           <label for="difficulty">Difficulty</label>
           <select id="difficulty">
@@ -339,7 +450,7 @@
             <option value="Hard">Hard</option>
           </select>
         </div>
-        
+
         <div class="form-group">
           <label for="quizType">Quiz Type</label>
           <select id="quizType">
@@ -348,16 +459,16 @@
             <option value="mixed">Mixed</option>
           </select>
         </div>
-        
+
         <div class="form-group">
           <label for="count">Number of Questions (1-20)</label>
           <input type="number" id="count" value="5" min="1" max="20">
         </div>
-        
+
         <button id="generateBtn" class="btn-primary" onclick="generateQuiz()">
           Generate Quiz
         </button>
-        
+
         <div id="loader" class="loader">
           <div class="spinner"></div>
           <p>🌀 Generating creative math questions...</p>
@@ -372,29 +483,34 @@
         <div id="question"></div>
         <div id="options"></div>
         <input type="text" id="user-answer" placeholder="Enter your answer" style="display:none;">
-        
+
         <div class="button-group">
           <button class="btn-secondary" onclick="prevQuestion()">◄ Previous</button>
           <button id="nextBtn" class="btn-secondary" onclick="nextQuestion()">Next ►</button>
           <button id="submitBtn" class="btn-success" onclick="submitQuiz()">✓ Submit Quiz</button>
         </div>
-        
+
         <div id="eval-loader" class="loader">
           <div class="spinner"></div>
           <p>⚙️ Evaluating your answers, please wait...</p>
         </div>
-        
+
         <div id="result"></div>
       </div>
     </div>
 
-    <div class="right">
+    <div class="right" aria-hidden="true">
       <h3>Questions</h3>
       <div id="nav"></div>
     </div>
   </div>
 
   <div id="toast" class="toast"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer muted" role="contentinfo" aria-label="Footer">
+    <div>Powered by <strong>EduBuddy</strong> © 2025</div>
+  </footer>
 
   <!-- MathJax Configuration -->
   <script>
@@ -466,15 +582,15 @@
         const res = await fetch('/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            topic: topicVal, 
-            grade: gradeVal, 
-            difficulty: difficultyVal, 
-            count: countVal, 
-            quizType: quizTypeVal 
+          body: JSON.stringify({
+            topic: topicVal,
+            grade: gradeVal,
+            difficulty: difficultyVal,
+            count: countVal,
+            quizType: quizTypeVal
           })
         });
-        
+
         loader.style.display = 'none';
         generateBtn.disabled = false;
 
@@ -509,7 +625,7 @@
         if (quizArea) quizArea.style.display = 'block';
         if (rightPanel) rightPanel.style.display = 'block';
         if (resultDiv) resultDiv.innerHTML = '';
-        
+
         buildNav();
         showQuestion();
         showToast('Quiz generated successfully!', true);
@@ -527,7 +643,7 @@
         console.error('Navigation element not found');
         return;
       }
-      
+
       nav.innerHTML = '';
       questions.forEach((_, i) => {
         const btn = document.createElement('button');
@@ -542,7 +658,7 @@
     function updateNav() {
       const buttons = document.querySelectorAll('.question-btn');
       if (!buttons || buttons.length === 0) return;
-      
+
       buttons.forEach((btn, i) => {
         btn.classList.toggle('active', i === current);
         btn.classList.toggle('answered', userAnswers[i] && userAnswers[i].trim() !== '');
@@ -552,7 +668,7 @@
     function updateProgress() {
       const bar = document.getElementById('progress-bar');
       if (!bar) return;
-      
+
       const answered = userAnswers.filter(a => a && a.trim() !== '').length;
       const percent = Math.round((answered / questions.length) * 100);
       bar.style.width = percent + '%';
@@ -564,7 +680,7 @@
         showToast('Invalid question data');
         return;
       }
-      
+
       const qnumEl = document.getElementById('qnum');
       const questionEl = document.getElementById('question');
       const optionsEl = document.getElementById('options');
@@ -577,7 +693,7 @@
         console.error('Missing elements');
         return;
       }
-      
+
       qnumEl.textContent = `Question ${current + 1} of ${questions.length}`;
       questionEl.innerHTML = q.question || 'Question text not available';
       optionsEl.innerHTML = '';
@@ -603,10 +719,10 @@
 
       nextBtn.style.display = current === questions.length - 1 ? 'none' : 'inline-block';
       submitBtn.style.display = current === questions.length - 1 ? 'inline-block' : 'none';
-      
+
       updateNav();
       updateProgress();
-      
+
       // Render math with MathJax
       if (window.MathJax && window.MathJax.typesetPromise) {
         setTimeout(() => {
@@ -618,14 +734,14 @@
     function saveAnswer() {
       const q = questions[current];
       if (!q) return;
-      
+
       if (q.options && q.options.length > 0) {
         const selected = document.querySelector('input[name="option"]:checked');
         userAnswers[current] = selected ? selected.value : '';
       } else {
         userAnswers[current] = document.getElementById('user-answer').value.trim();
       }
-      
+
       updateProgress();
     }
 
@@ -653,7 +769,7 @@
 
     async function submitQuiz() {
       saveAnswer();
-      
+
       const unanswered = userAnswers.filter(a => !a || a.trim() === '').length;
       if (unanswered > 0) {
         if (!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) {
@@ -663,7 +779,7 @@
 
       const evalLoader = document.getElementById('eval-loader');
       const submitBtn = document.getElementById('submitBtn');
-      
+
       evalLoader.style.display = 'block';
       submitBtn.disabled = true;
 
@@ -679,7 +795,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ qa_pairs })
         });
-        
+
         evalLoader.style.display = 'none';
         submitBtn.disabled = false;
 
@@ -728,11 +844,11 @@
       let correct = 0;
       evaluation.forEach((r, i) => {
         if (!r || typeof r !== 'object') return;
-        
-        const isCorrect = r.result && r.result.toLowerCase().includes('correct') && 
+
+        const isCorrect = r.result && r.result.toLowerCase().includes('correct') &&
                          !r.result.toLowerCase().includes('incorrect');
         if (isCorrect) correct++;
-        
+
         const item = document.createElement('div');
         item.className = 'result-item' + (isCorrect ? '' : ' incorrect');
         item.innerHTML = `
@@ -822,7 +938,7 @@
     document.addEventListener('keydown', (e) => {
       const quizArea = document.getElementById('quiz-area');
       if (!quizArea || quizArea.style.display === 'none') return;
-      
+
       if (e.key === 'ArrowRight' && current < questions.length - 1) {
         nextQuestion();
       } else if (e.key === 'ArrowLeft' && current > 0) {
@@ -833,13 +949,13 @@
     // Verify page loaded correctly
     window.addEventListener('DOMContentLoaded', function() {
       const requiredElements = [
-        'topic', 'grade', 'difficulty', 'quizType', 'count', 
-        'generateBtn', 'loader', 'setup', 'quiz-area', 
+        'topic', 'grade', 'difficulty', 'quizType', 'count',
+        'generateBtn', 'loader', 'setup', 'quiz-area',
         'question', 'options', 'user-answer', 'result'
       ];
-      
+
       const missing = requiredElements.filter(id => !document.getElementById(id));
-      
+
       if (missing.length > 0) {
         console.error('Missing page elements:', missing);
         alert('Page did not load correctly. Missing: ' + missing.join(', ') + '. Please refresh.');
@@ -849,5 +965,4 @@
     });
   </script>
 </body>
-
 </html>
