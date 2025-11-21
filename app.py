@@ -5,21 +5,19 @@ import json
 import re
 from functools import wraps
 import time
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 # ========================
 # CONFIGURATION
 # ========================
 app = Flask(__name__)
 
-GENAI_API_KEY = os.environ.get("GENAI_API_KEY")
+# Get API key from environment variable
+GENAI_API_KEY = os.environ.get("GENAI_API_KEY") or os.getenv("GENAI_API_KEY")
 if not GENAI_API_KEY:
-    raise ValueError("GENAI_API_KEY environment variable must be set")
+    print("WARNING: GENAI_API_KEY not found in environment variables")
+else:
+    genai.configure(api_key=GENAI_API_KEY)
 
-genai.configure(api_key=GENAI_API_KEY)
 MODEL_NAME = "models/gemini-2.5-flash"
 
 # Rate limiting
@@ -147,6 +145,10 @@ def index():
 @rate_limit
 def generate():
     try:
+        # Check if API key is configured
+        if not GENAI_API_KEY:
+            return jsonify({"error": "API key not configured. Please contact administrator."}), 500
+        
         data = request.get_json()
         if not data:
             return jsonify({"error": "Invalid request data"}), 400
@@ -156,22 +158,24 @@ def generate():
             return jsonify({"error": "; ".join(errors)}), 400
         
         # Build prompt
-        prompt = f"""Create {validated_data['count']} math questions for Grade {validated_data['grade']} about {validated_data['topic']}.
+        prompt = f"""Create {validated_data['count']} math questions for Grade {validated_data['grade']} about "{validated_data['topic']}".
 
 Difficulty: {validated_data['difficulty']}
 Quiz type: {validated_data['quiz_type']}
 
 Rules:
-- If quiz type is "mcq": provide 4 options
-- If quiz type is "written": leave options empty []
+- If quiz type is "mcq": provide exactly 4 options
+- If quiz type is "written": leave options as empty array []
 - If quiz type is "mixed": alternate between mcq and written
 - Use LaTeX notation: \\(\\frac{{a}}{{b}}\\) for fractions, \\(x^2\\) for powers, \\(\\sqrt{{x}}\\) for roots
 
-RETURN ONLY THIS JSON (no extra text):
+RETURN ONLY THIS JSON FORMAT (no extra text before or after):
 [
   {{"question": "What is \\\\(2 + 3\\\\)?", "options": ["3", "4", "5", "6"], "answer": "5"}},
   {{"question": "Solve \\\\(\\\\frac{{6}}{{2}}\\\\)", "options": [], "answer": "3"}}
-]"""
+]
+
+Each question must have: question (string), options (array), answer (string)"""
 
         model = genai.GenerativeModel(MODEL_NAME)
         
@@ -183,7 +187,6 @@ RETURN ONLY THIS JSON (no extra text):
         
         # Try up to 3 times
         questions = None
-        last_error = None
         
         for attempt in range(3):
             try:
@@ -193,7 +196,7 @@ RETURN ONLY THIS JSON (no extra text):
                     if attempt < 2:
                         time.sleep(1)
                         continue
-                    return jsonify({"error": "Empty response from AI"}), 500
+                    return jsonify({"error": "Empty response from AI. Please try again."}), 500
                 
                 text = response.text.strip()
                 questions = extract_json_from_response(text)
@@ -201,16 +204,15 @@ RETURN ONLY THIS JSON (no extra text):
                 if questions and len(questions) > 0:
                     break
                 
-                last_error = f"Could not parse response (attempt {attempt + 1})"
                 if attempt < 2:
                     time.sleep(1)
                     
             except Exception as e:
-                last_error = str(e)
+                print(f"Attempt {attempt + 1} error: {e}")
                 if attempt < 2:
                     time.sleep(1)
                 else:
-                    return jsonify({"error": f"Failed to generate quiz: {last_error}"}), 500
+                    return jsonify({"error": f"Failed to generate quiz: {str(e)}"}), 500
         
         if not questions or not isinstance(questions, list) or len(questions) == 0:
             return jsonify({"error": "Could not generate valid questions. Please try again."}), 500
@@ -232,13 +234,17 @@ RETURN ONLY THIS JSON (no extra text):
         return jsonify({"questions": questions})
     
     except Exception as e:
-        app.logger.error(f"Error in generate: {str(e)}")
+        print(f"Error in generate: {str(e)}")
         return jsonify({"error": "An error occurred while generating the quiz"}), 500
 
 @app.route('/evaluate', methods=['POST'])
 @rate_limit
 def evaluate():
     try:
+        # Check if API key is configured
+        if not GENAI_API_KEY:
+            return jsonify({"error": "API key not configured. Please contact administrator."}), 500
+        
         data = request.get_json()
         if not data:
             return jsonify({"error": "Invalid request data"}), 400
@@ -251,21 +257,22 @@ def evaluate():
         if len(qa_pairs) > 20:
             return jsonify({"error": "Too many questions to evaluate"}), 400
         
-        eval_prompt = """Evaluate these student answers. Be lenient with formatting (e.g., "0.5" = "1/2").
+        eval_prompt = """Evaluate these student answers. Be lenient with formatting (e.g., "0.5" = "1/2" = "½").
 
-Return ONLY this JSON (no extra text):
+Return ONLY this JSON format (no extra text):
 [
   {{"result": "Correct", "explanation": "Brief explanation"}},
   {{"result": "Incorrect", "explanation": "Brief explanation"}}
-]"""
+]
 
-Data: + json.dumps(qa_pairs, indent=2)
+Data:
+""" + json.dumps(qa_pairs, indent=2)
 
         model = genai.GenerativeModel(MODEL_NAME)
         response = model.generate_content(eval_prompt)
         
         if not response or not response.text:
-            return jsonify({"error": "Empty response from AI"}), 500
+            return jsonify({"error": "Empty response from AI. Please try again."}), 500
         
         evaluation = extract_json_from_response(response.text.strip())
         
@@ -279,7 +286,7 @@ Data: + json.dumps(qa_pairs, indent=2)
         return jsonify({"evaluation": evaluation})
     
     except Exception as e:
-        app.logger.error(f"Error in evaluate: {str(e)}")
+        print(f"Error in evaluate: {str(e)}")
         return jsonify({"error": "An error occurred while evaluating answers"}), 500
 
 @app.errorhandler(404)
@@ -290,5 +297,20 @@ def not_found(e):
 def internal_error(e):
     return jsonify({"error": "Internal server error"}), 500
 
+# ========================
+# MAIN
+# ========================
+
+# For local development
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    # Try to load .env for local development
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        GENAI_API_KEY = os.environ.get("GENAI_API_KEY")
+        if GENAI_API_KEY:
+            genai.configure(api_key=GENAI_API_KEY)
+    except ImportError:
+        pass
+    
+    app.run(debug=True, host='0.0.0.0', port=5000)
